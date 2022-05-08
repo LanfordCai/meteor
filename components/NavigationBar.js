@@ -9,7 +9,7 @@ export default function NavigationBar() {
         </label>
         
         <a 
-          href={'https://github.com/33-Labs/bayou'}
+          href={'https://github.com/LanfordCai/meteor'}
           target='_blank' 
           rel='noopener noreferrer'
           className='absolute right-0'>
