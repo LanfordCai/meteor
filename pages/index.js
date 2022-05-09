@@ -61,7 +61,6 @@ function FlowButton() {
           type="button"
           className="h-14 mt-8 mb-8 w-40 items-center px-6 py-3 border border-transparent text-base font-medium shadow-sm text-black bg-flow-green focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-flow-green"
           onClick={async () => {
-            console.log("verify")
             // 04 is the prefix of uncompressed public key in bitcon/ethereum's ecdsa, delete it.
             const publicKey = state.publicKey.replace('0x04', '')
             // ethereum's signature contains v value in the last byte, delete it.
@@ -194,16 +193,23 @@ function MetamaskButton() {
         type="button"
         className="h-14 mt-8 mb-8 w-40 px-6 py-3 border border-transparent text-base font-medium shadow-sm text-white bg-metamask-orange focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-metamask-orange"
         onClick={() => {
-          const digest = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(message))
-
           library
           .getSigner(account)
-          .signMessage(account)
+          .signMessage(message)
           .then((signature) => {
+            const msgWithPrefix = '\x19Ethereum Signed Message:\n' + message.length + message
+            const digest = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(msgWithPrefix))
             const publicKey = ethers.utils.recoverPublicKey(digest, signature)
+
+            const recoveredAddress = ethers.utils.computeAddress(publicKey)
+            console.log(recoveredAddress)
+            if (account != recoveredAddress) {
+              throw new Error("Invalid recoveredAddress")
+            }
+
             setPublicKey(publicKey)
             setSignature(signature)
-            dispatch({ message: message})
+            dispatch({ message: msgWithPrefix})
             dispatch({ publicKey: publicKey })
             dispatch({ signature: signature })
           })
